@@ -11,7 +11,7 @@ import grovepi
 
 # dht_sensor_port = 7		# Connect the DHt sensor to port 7
 
-# Connect the Grove Moisture Sensor to analog port A0
+# Connect the Grove Moisture Sensor to analog port A0 (all wires except VCC, which goes to D2's SIG pin)
 # SIG,NC,VCC,GND
 moisture_sensor = 0
 
@@ -26,7 +26,7 @@ temp_sensor = 2
 # SIG,NC,VCC,GND
 led = 4
 
-# Power pin for the humidity sensor port D2
+# Power pin for the humidity sensor port D2 (attach sensor power to D4's SIG pin)
 humpower = 2
 
 # Turn on LED once sensor exceeds threshold resistance
