@@ -29,9 +29,6 @@ led = 4
 # Power pin for the humidity sensor port D2 (attach sensor power to D4's SIG pin)
 humpower = 2
 
-# Turn on LED once sensor exceeds threshold resistance
-threshold = 10
-
 grovepi.pinMode(moisture_sensor, "INPUT")
 grovepi.pinMode(light_sensor, "INPUT")
 grovepi.pinMode(temp_sensor, "INPUT")
@@ -59,16 +56,18 @@ while True:
 
         temp = grovepi.analogRead(temp_sensor)/25.0
 
-        # if light_resistance > threshold:
+        # if humidity is really low, flash the LED
         if hum < 25:
             instructions = "water now"
             grovepi.digitalWrite(led, 0)
             time.sleep(0.5)
             grovepi.digitalWrite(led, 1)
             time.sleep(0.5)
+        # if humidity is a bit low, always on
         elif hum < 50:
             instructions = "water?   "
             grovepi.digitalWrite(led, 1)
+        # if wet enough, LED always off
         else:
             instructions = "happy!   "
             grovepi.digitalWrite(led, 0)
