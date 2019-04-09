@@ -26,14 +26,17 @@ temp_sensor = 2
 # SIG,NC,VCC,GND
 led = 4
 
+# Power pin for the humidity sensor port D2
+humpower = 2
+
 # Turn on LED once sensor exceeds threshold resistance
 threshold = 10
 
-# TODO overlapping digital/analog pin numbers???
 grovepi.pinMode(moisture_sensor, "INPUT")
 grovepi.pinMode(light_sensor, "INPUT")
 grovepi.pinMode(temp_sensor, "INPUT")
 grovepi.pinMode(led, "OUTPUT")
+grovepi.pinMode(humpower, "OUTPUT")
 
 # Start and initialize the OLED
 oled_init()
@@ -43,45 +46,52 @@ oled_setVerticalMode()
 time.sleep(.1)
 
 while True:
-	try:
-		# Borrowed from http://www.seeedstudio.com/wiki/Grove_-_Light_Sensor#With_Raspberry_Pi
-		light_raw = grovepi.analogRead(light_sensor)
-		# Calculate resistance of sensor in K
-		light_resistance = int(float(1023 - light_raw) * 10 / light_raw)
+    try:
+        grovepi.digitalWrite(humpower, 1)
+        time.sleep(0.1)
+        hum = grovepi.analogRead(moisture_sensor)/10.0
+        grovepi.digitalWrite(humpower, 0)
 
-		hum = grovepi.analogRead(moisture_sensor)/10.0
-		temp = grovepi.analogRead(temp_sensor)/25.0
+        # Borrowed from http://www.seeedstudio.com/wiki/Grove_-_Light_Sensor#With_Raspberry_Pi
+        light_raw = grovepi.analogRead(light_sensor)
+        # Calculate resistance of sensor in K
+        light_resistance = int(float(1023 - light_raw) * 10 / light_raw)
 
-		# if light_resistance > threshold:
-		if hum < 75:
-			grovepi.digitalWrite(led, 0)
-			time.sleep(0.5)
-			grovepi.digitalWrite(led, 1)
-			time.sleep(0.5)
-		if hum < 80:
-			grovepi.digitalWrite(led, 1)
-		else:
-			grovepi.digitalWrite(led, 0)
-		
-		# No... don't have the combined temp + humidity sensor
-		# [ temp,hum ] = dht(dht_sensor_port,1)		#Get the temperature and Humidity from the DHT sensor
+        temp = grovepi.analogRead(temp_sensor)/25.0
 
-		# print "temp =", temp, "C\thumidity =", hum,"%"
-		t = str(temp)
-		h = str(hum)
-		
-		oled_setTextXY(0, 1)			# Print at line 1
-		oled_putString("Tomatoes!")
-		
-		oled_setTextXY(2, 0)			# Print "TEMP" and the temperature in line 3
-		oled_putString("Temp :" + t)
-		
-		oled_setTextXY(3, 0)			# Print "HUM :" and the humidity in line 4
-		oled_putString("Hum  :" + h+"%")
+        # if light_resistance > threshold:
+        if hum < 25:
+            instructions = "water now"
+            grovepi.digitalWrite(led, 0)
+            time.sleep(0.5)
+            grovepi.digitalWrite(led, 1)
+            time.sleep(0.5)
+        elif hum < 50:
+            instructions = "water?   "
+            grovepi.digitalWrite(led, 1)
+        else:
+            instructions = "happy!   "
+            grovepi.digitalWrite(led, 0)
 
-		oled_setTextXY(4, 0)
-		oled_putString("Light:" + str(light_resistance) + "  ")
+        # No... don't have the combined temp + humidity sensor
+        # [ temp,hum ] = dht(dht_sensor_port,1)		#Get the temperature and Humidity from the DHT sensor
 
-		time.sleep(1)
-	except (IOError, TypeError) as e:
-		print("Error")
+        # print "temp =", temp, "C\thumidity =", hum,"%"
+        t = str(temp)
+        h = str(hum)
+
+        oled_setTextXY(0, 0)			# Print at line 1
+        oled_putString("Plant monitor")
+
+        oled_setTextXY(2, 0)			# Print "TEMP" and the temperature in line 3
+        oled_putString("Temp :" + t)
+
+        oled_setTextXY(3, 0)			# Print "HUM :" and the humidity in line 4
+        oled_putString("Hum  :" + h+"% ")
+
+        oled_setTextXY(4, 0)
+        oled_putString("Light:" + str(light_resistance) + "  ")
+
+        time.sleep(1)
+    except (IOError, TypeError) as e:
+        print("Error")
