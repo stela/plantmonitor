@@ -26,9 +26,6 @@ temp_sensor = 2
 # SIG,NC,VCC,GND
 led = 4
 
-# Turn on LED once sensor exceeds threshold resistance
-threshold = 10
-
 # TODO overlapping digital/analog pin numbers???
 grovepi.pinMode(moisture_sensor, "INPUT")
 grovepi.pinMode(light_sensor, "INPUT")
@@ -52,14 +49,16 @@ while True:
 		hum = grovepi.analogRead(moisture_sensor)/10.0
 		temp = grovepi.analogRead(temp_sensor)/25.0
 
-		# if light_resistance > threshold:
+		# if humidity is really low, flash the LED
 		if hum < 75:
 			grovepi.digitalWrite(led, 0)
 			time.sleep(0.5)
 			grovepi.digitalWrite(led, 1)
 			time.sleep(0.5)
+		# if humidity is a bit low, always on
 		if hum < 80:
 			grovepi.digitalWrite(led, 1)
+		# if wet enough, LED always off
 		else:
 			grovepi.digitalWrite(led, 0)
 		
